@@ -21,15 +21,16 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Language**: TypeScript with ES modules
-- **API Design**: RESTful API endpoints for TV brands and user settings
-- **Data Layer**: In-memory storage with interface for future database integration
+- **API Design**: RESTful API endpoints for TV brands, detected TVs, user settings, and IR commands
+- **Database**: PostgreSQL with automatic initialization of TV brand data from IR codes
+- **Bluetooth API**: Enhanced Web Bluetooth support for connecting to IR blaster devices
 - **Development**: Hot reloading with Vite integration in development mode
 
 ### Data Storage Solutions
-- **Current**: MemStorage class providing in-memory data persistence
-- **Database Ready**: Drizzle ORM configured for PostgreSQL with schema definitions
-- **IR Codes**: JSON file containing TV brand IR command mappings
-- **Migration Strategy**: Drizzle Kit for database schema management
+- **Current**: PostgreSQL database with Drizzle ORM for persistent data storage
+- **Database Schema**: Three main tables - tv_brands, detected_tvs, user_settings
+- **IR Codes**: JSON file containing TV brand IR command mappings, loaded into database
+- **Migration Strategy**: Drizzle Kit for database schema management with automatic initialization
 
 ## Key Components
 
@@ -43,8 +44,10 @@ Preferred communication style: Simple, everyday language.
 7. **Help System**: Built-in guidance for setup and usage
 
 ### Technical Components
-- **Bluetooth Service**: Web Bluetooth API integration for external IR devices
-- **IR Code Management**: Centralized system for TV brand command mapping
+- **Bluetooth Service**: Enhanced Web Bluetooth API integration supporting Broadlink, SwitchBot, and generic IR blasters
+- **IR Code Management**: Centralized system for TV brand command mapping with multiple IR protocol support
+- **Database Integration**: PostgreSQL storage for persistent TV detection and user preferences
+- **Device Discovery**: Network and Bluetooth scanning for automatic TV and IR blaster detection
 - **Responsive Design**: Mobile-first approach with touch-friendly controls
 - **Error Handling**: Comprehensive error states with user feedback
 - **Real-time Feedback**: Visual and haptic feedback for button presses

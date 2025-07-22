@@ -91,6 +91,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send IR command to TV
+  app.post("/api/send-command", async (req, res) => {
+    try {
+      const { command, brand, tvId, method } = req.body;
+      
+      // Get TV brand info for IR codes
+      let irCode = "";
+      if (brand) {
+        const brandInfo = await storage.getTvBrandByName(brand);
+        if (brandInfo && brandInfo.irCodes && (brandInfo.irCodes as any)[command]) {
+          irCode = (brandInfo.irCodes as any)[command];
+        }
+      }
+      
+      // Log the command being sent (for development purposes)
+      console.log(`Sending ${command} command to ${brand || 'unknown'} TV via ${method || 'unknown'} method`);
+      if (irCode) {
+        console.log(`IR Code: ${irCode}`);
+      }
+      
+      // In a real implementation, this would interface with actual hardware
+      // For now, we just simulate successful command sending
+      res.json({ 
+        success: true, 
+        command, 
+        brand: brand || 'unknown',
+        method: method || 'simulated',
+        irCode: irCode || 'N/A',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send command" });
+    }
+  });
+
+  // Connect to Bluetooth device
+  app.post("/api/bluetooth/connect", async (req, res) => {
+    try {
+      const { deviceId, deviceName } = req.body;
+      
+      // Update user settings with Bluetooth device info
+      await storage.updateUserSettings({ 
+        bluetoothDeviceId: deviceId,
+        preferences: { bluetoothDeviceName: deviceName }
+      });
+      
+      console.log(`Connected to Bluetooth device: ${deviceName} (${deviceId})`);
+      
+      res.json({ 
+        success: true, 
+        deviceId, 
+        deviceName,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to connect to Bluetooth device" });
+    }
+  });
+
+  // Disconnect Bluetooth device
+  app.post("/api/bluetooth/disconnect", async (req, res) => {
+    try {
+      await storage.updateUserSettings({ 
+        bluetoothDeviceId: null,
+        preferences: {}
+      });
+      
+      console.log("Disconnected from Bluetooth device");
+      
+      res.json({ 
+        success: true,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to disconnect Bluetooth device" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
