@@ -34,11 +34,13 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Core Features
-1. **TV Brand Selection**: Dropdown to choose from supported TV manufacturers
-2. **Connection Methods**: Support for both phone IR and Bluetooth IR blasters
-3. **Remote Controls**: Full TV remote functionality including power, volume, channels, navigation
-4. **Settings Management**: User preferences and device configuration
-5. **Help System**: Built-in guidance for setup and usage
+1. **TV Detection & Scanning**: Automatically discover nearby smart TVs on the network
+2. **TV Brand Selection**: Dropdown to choose from supported TV manufacturers
+3. **Connection Methods**: Support for both phone IR and Bluetooth IR blasters
+4. **Remote Controls**: Full TV remote functionality including power, volume, channels, navigation
+5. **Device Management**: Track and manage multiple detected TVs with location info
+6. **Settings Management**: User preferences and device configuration
+7. **Help System**: Built-in guidance for setup and usage
 
 ### Technical Components
 - **Bluetooth Service**: Web Bluetooth API integration for external IR devices
@@ -49,12 +51,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Flow
 
-1. **Initialization**: App loads TV brands and user settings from API
-2. **Brand Selection**: User chooses TV brand, triggering IR code lookup
-3. **Connection Setup**: User configures Bluetooth or phone IR transmission
-4. **Command Execution**: Button presses trigger IR command transmission
-5. **State Persistence**: User preferences saved to backend storage
-6. **Feedback Loop**: Visual indicators show connection status and command success
+1. **Initialization**: App loads TV brands, detected TVs, and user settings from API
+2. **TV Discovery**: Users can scan for nearby smart TVs and Bluetooth devices
+3. **Device Selection**: User chooses from detected TVs or selects brand manually
+4. **Connection Setup**: User configures Bluetooth or phone IR transmission
+5. **Command Execution**: Button presses trigger IR command transmission
+6. **State Persistence**: User preferences and selected TV saved to backend storage
+7. **Device Tracking**: System maintains list of discovered TVs with availability status
+8. **Feedback Loop**: Visual indicators show connection status and command success
 
 ## External Dependencies
 

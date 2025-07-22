@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSettingsSchema } from "@shared/schema";
+import { insertUserSettingsSchema, insertDetectedTvSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all TV brands
@@ -46,6 +46,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedSettings);
     } catch (error) {
       res.status(500).json({ error: "Failed to update user settings" });
+    }
+  });
+
+  // Get detected TVs
+  app.get("/api/detected-tvs", async (req, res) => {
+    try {
+      const detectedTvs = await storage.getDetectedTvs();
+      res.json(detectedTvs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch detected TVs" });
+    }
+  });
+
+  // Scan for TVs in the area
+  app.post("/api/scan-tvs", async (req, res) => {
+    try {
+      const detectedTvs = await storage.scanForTvs();
+      res.json(detectedTvs);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to scan for TVs" });
+    }
+  });
+
+  // Add a detected TV manually
+  app.post("/api/detected-tvs", async (req, res) => {
+    try {
+      const validatedData = insertDetectedTvSchema.parse(req.body);
+      const newTv = await storage.addDetectedTv(validatedData);
+      res.json(newTv);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add detected TV" });
+    }
+  });
+
+  // Remove a detected TV
+  app.delete("/api/detected-tvs/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.removeDetectedTv(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to remove detected TV" });
     }
   });
 

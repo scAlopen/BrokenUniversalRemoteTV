@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/remote/Header';
 import { BrandSelector } from '@/components/remote/BrandSelector';
+import { TvScanner } from '@/components/remote/TvScanner';
 import { PowerControls } from '@/components/remote/PowerControls';
 import { VolumeChannelControls } from '@/components/remote/VolumeChannelControls';
 import { NavigationControls } from '@/components/remote/NavigationControls';
@@ -17,10 +18,12 @@ import { useIrCodes } from '@/hooks/use-ir-codes';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import type { UserSettings, TvBrand } from '@shared/schema';
+import type { UserSettings, TvBrand, DetectedTv } from '@shared/schema';
 
 export default function RemotePage() {
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedTv, setSelectedTv] = useState<DetectedTv | null>(null);
+  const [activeTab, setActiveTab] = useState<'brands' | 'nearby'>('nearby');
   const [channelBuffer, setChannelBuffer] = useState('');
   const [showChannelDisplay, setShowChannelDisplay] = useState(false);
   const [isTransmitting, setIsTransmitting] = useState(false);
@@ -55,6 +58,22 @@ export default function RemotePage() {
       setSelectedBrand(settings.selectedBrand);
     }
   }, [settings, selectedBrand]);
+
+  const handleTvSelect = useCallback((tv: DetectedTv) => {
+    setSelectedTv(tv);
+    if (tv.brand) {
+      setSelectedBrand(tv.brand);
+      updateSettingsMutation.mutate({ 
+        selectedBrand: tv.brand,
+        selectedTvId: tv.id 
+      });
+      
+      toast({
+        title: `${tv.name} Selected`,
+        description: `Connected to ${tv.brand} TV at ${tv.ipAddress || 'unknown location'}`,
+      });
+    }
+  }, [updateSettingsMutation, toast]);
 
   const handleBrandChange = useCallback((brand: string) => {
     setSelectedBrand(brand);
@@ -165,15 +184,49 @@ export default function RemotePage() {
     <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg">
       <Header 
         connectionStatus={getConnectionStatus()}
-        deviceName={device?.name}
+        deviceName={selectedTv?.name || device?.name}
       />
 
-      <BrandSelector
-        brands={brands}
-        selectedBrand={selectedBrand}
-        onBrandChange={handleBrandChange}
-        isLoading={brandsLoading}
-      />
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('nearby')}
+            className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 ${
+              activeTab === 'nearby'
+                ? 'border-primary text-primary bg-primary/5'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Nearby TVs
+          </button>
+          <button
+            onClick={() => setActiveTab('brands')}
+            className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 ${
+              activeTab === 'brands'
+                ? 'border-primary text-primary bg-primary/5'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            All Brands
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'nearby' ? (
+        <TvScanner
+          onTvSelect={handleTvSelect}
+          selectedTvId={selectedTv?.id}
+        />
+      ) : (
+        <BrandSelector
+          brands={brands}
+          selectedBrand={selectedBrand}
+          onBrandChange={handleBrandChange}
+          isLoading={brandsLoading}
+        />
+      )}
 
       {/* Connection Status Alert */}
       {showConnectionAlert && (
