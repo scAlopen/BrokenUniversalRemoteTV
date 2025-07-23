@@ -319,21 +319,74 @@ export class DatabaseStorage implements IStorage {
 // Initialize database with TV brands from IR codes
 export async function initializeDatabase() {
   try {
+    console.log('Initializing database...');
+    
     // Check if brands already exist
     const existingBrands = await db.select().from(tvBrands).limit(1);
     if (existingBrands.length === 0) {
+      console.log('No existing TV brands found, initializing...');
+      
       // Initialize with IR codes data
       for (const brand of Object.values(irCodesData)) {
-        await db.insert(tvBrands).values({
-          name: (brand as any).name,
-          displayName: (brand as any).displayName,
-          irCodes: (brand as any).codes,
-        });
+        try {
+          await db.insert(tvBrands).values({
+            name: (brand as any).name,
+            displayName: (brand as any).displayName,
+            irCodes: (brand as any).codes,
+          });
+        } catch (insertError) {
+          console.error(`Failed to insert brand ${(brand as any).name}:`, insertError);
+        }
       }
       console.log('Database initialized with TV brands');
+    } else {
+      console.log(`Database already initialized with ${existingBrands.length} brands`);
     }
+    
+    // Ensure Samsung has multiple IR codes for compatibility
+    const samsung = await db.select().from(tvBrands).where(eq(tvBrands.name, 'samsung')).limit(1);
+    if (samsung.length === 0) {
+      console.log('Adding Samsung with enhanced IR codes...');
+      await db.insert(tvBrands).values({
+        name: 'samsung',
+        displayName: 'Samsung',
+        irCodes: {
+          "power": ["0xE0E040BF", "0xE0E09966", "0xE0E019E6"],
+          "volumeUp": ["0xE0E0E01F", "0xE0E0807F", "0xE0E0C03F"],
+          "volumeDown": ["0xE0E0D02F", "0xE0E0A05F", "0xE0E0B04F"],
+          "mute": ["0xE0E0F00F", "0xE0E020DF", "0xE0E0906F"],
+          "channelUp": ["0xE0E048B7", "0xE0E000FF", "0xE0E050AF"],
+          "channelDown": ["0xE0E008F7", "0xE0E0807F", "0xE0E030CF"],
+          "navUp": ["0xE0E006F9", "0xE0E002FD", "0xE0E0629D"],
+          "navDown": ["0xE0E08679", "0xE0E0827D", "0xE0E0A25D"],
+          "navLeft": ["0xE0E0A659", "0xE0E0E01F", "0xE0E0C639"],
+          "navRight": ["0xE0E046B9", "0xE0E0609F", "0xE0E026D9"],
+          "ok": ["0xE0E016E9", "0xE0E022DD", "0xE0E036C9"],
+          "menu": ["0xE0E058A7", "0xE0E0C23D", "0xE0E038C7"],
+          "back": ["0xE0E01AE5", "0xE0E014EB", "0xE0E034CB"],
+          "home": ["0xE0E09E61", "0xE0E03EC1", "0xE0E05EA1"],
+          "0": ["0xE0E08877", "0xE0E008F7", "0xE0E028D7"],
+          "1": ["0xE0E020DF", "0xE0E08877", "0xE0E0A857"],
+          "2": ["0xE0E0A05F", "0xE0E048B7", "0xE0E06897"],
+          "3": ["0xE0E0609F", "0xE0E0C837", "0xE0E0E817"],
+          "4": ["0xE0E010EF", "0xE0E028D7", "0xE0E018E7"],
+          "5": ["0xE0E0906F", "0xE0E0A857", "0xE0E09867"],
+          "6": ["0xE0E050AF", "0xE0E06897", "0xE0E058A7"],
+          "7": ["0xE0E030CF", "0xE0E0E817", "0xE0E038C7"],
+          "8": ["0xE0E0B04F", "0xE0E018E7", "0xE0E0B847"],
+          "9": ["0xE0E0708F", "0xE0E09867", "0xE0E078F7"],
+          "enter": ["0xE0E016E9", "0xE0E022DD", "0xE0E036C9"],
+          "prevChannel": ["0xE0E0C837", "0xE0E058A7", "0xE0E078F7"],
+          "source": ["0xE0E0807F", "0xE0E0C03F", "0xE0E040BF"],
+          "smart": ["0xE0E09E61", "0xE0E03EC1", "0xE0E05EA1"],
+          "netflix": ["0xE0E036C9", "0xE0E0B24D", "0xE0E052AD"]
+        }
+      });
+    }
+    
   } catch (error) {
     console.error('Error initializing database:', error);
+    // Don't throw - allow app to start even if database init fails
   }
 }
 

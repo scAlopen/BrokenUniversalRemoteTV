@@ -97,9 +97,11 @@ Preferred communication style: Simple, everyday language.
 
 ### Production Setup
 - **Server**: Express serves both API routes and static frontend
-- **Database**: PostgreSQL with Drizzle ORM migrations
+- **Database**: PostgreSQL with Drizzle ORM migrations and automatic initialization
 - **Environment**: NODE_ENV=production enables optimizations
-- **Deployment**: Single bundle deployment with combined frontend/backend
+- **Deployment**: Ready for Render.com with configuration files included
+- **Build Output**: Client assets in `dist/public`, server bundle as `dist/index.js`
+- **Port Configuration**: Auto-detects PORT environment variable (Render compatible)
 
 ### Development Workflow
 - **Hot Reloading**: Vite middleware provides instant updates
