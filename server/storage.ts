@@ -232,10 +232,28 @@ export class DatabaseStorage implements IStorage {
     // Simulate network scanning for smart TVs
     const mockNetworkTvs: InsertDetectedTv[] = [
       {
-        name: "Samsung Smart TV (Living Room)",
+        name: "Samsung 4K Smart TV - First Gen (Living Room)",
         brand: "samsung",
         ipAddress: "192.168.1.101",
         macAddress: "AA:BB:CC:DD:EE:01",
+        deviceType: "network",
+        isAvailable: true,
+        lastSeen: now,
+      },
+      {
+        name: "Samsung QLED 4K TV - 2019 Model (Living Room)",
+        brand: "samsung",
+        ipAddress: "192.168.1.107",
+        macAddress: "AA:BB:CC:DD:EE:07",
+        deviceType: "network",
+        isAvailable: true,
+        lastSeen: now,
+      },
+      {
+        name: "Samsung Crystal UHD 4K - 2016 Model (Bedroom)",
+        brand: "samsung",
+        ipAddress: "192.168.1.108",
+        macAddress: "AA:BB:CC:DD:EE:08",
         deviceType: "network",
         isAvailable: true,
         lastSeen: now,

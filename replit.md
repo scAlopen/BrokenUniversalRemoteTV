@@ -36,12 +36,14 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Features
 1. **TV Detection & Scanning**: Automatically discover nearby smart TVs on the network
-2. **TV Brand Selection**: Dropdown to choose from supported TV manufacturers
-3. **Connection Methods**: Support for both phone IR and Bluetooth IR blasters
-4. **Remote Controls**: Full TV remote functionality including power, volume, channels, navigation
-5. **Device Management**: Track and manage multiple detected TVs with location info
-6. **Settings Management**: User preferences and device configuration
-7. **Help System**: Built-in guidance for setup and usage
+2. **Multi-Generation Compatibility**: Enhanced support for both newer and first-generation Samsung 4K Smart TVs
+3. **TV Brand Selection**: Dropdown to choose from supported TV manufacturers
+4. **Connection Methods**: Support for both phone IR and Bluetooth IR blasters
+5. **Remote Controls**: Full TV remote functionality including power, volume, channels, navigation
+6. **Device Management**: Track and manage multiple detected TVs with location info
+7. **Fallback IR Codes**: Multiple IR code variants per command for maximum compatibility
+8. **Settings Management**: User preferences and device configuration
+9. **Help System**: Built-in guidance for setup and usage
 
 ### Technical Components
 - **Bluetooth Service**: Enhanced Web Bluetooth API integration supporting Broadlink, SwitchBot, and generic IR blasters

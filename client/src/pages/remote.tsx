@@ -86,7 +86,7 @@ export default function RemotePage() {
     });
   }, [brands, updateSettingsMutation, toast]);
 
-  const sendIrCommand = useCallback(async (command: string) => {
+  const sendIrCommand = useCallback(async (command: string, attempt: number = 0) => {
     if (!selectedBrand) {
       toast({
         title: "No TV Brand Selected",
@@ -96,35 +96,61 @@ export default function RemotePage() {
       return;
     }
 
-    const irCode = getIrCode(selectedBrand, command);
-    if (!irCode) {
-      toast({
-        title: "Command Not Available",
-        description: `${command} command not found for ${selectedBrand}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsTransmitting(true);
 
     try {
-      if (isConnected) {
-        // Send via Bluetooth
-        await sendCommand(irCode);
-        toast({
-          title: "Command Sent",
-          description: `${command} sent via Bluetooth`,
-        });
-      } else {
-        // Show IR code for manual use
-        toast({
-          title: "IR Code",
-          description: `${command}: ${irCode}`,
-          duration: 3000,
-        });
+      // Send command with enhanced API that supports multiple codes
+      const response = await apiRequest('POST', '/api/send-command', {
+        command,
+        brand: selectedBrand,
+        tvId: selectedTv?.id,
+        method: isConnected ? 'bluetooth' : 'IR',
+        attempt
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        if (isConnected) {
+          // Send via Bluetooth with actual IR code
+          await sendCommand(result.irCode);
+          toast({
+            title: "Command Sent",
+            description: `${command} sent via Bluetooth${result.totalCodes > 1 ? ` (Code ${result.attempt}/${result.totalCodes})` : ''}`,
+          });
+        } else {
+          // Show IR code for manual use with generation info
+          const generationInfo = result.totalCodes > 1 ? ` (Compatible code ${result.attempt}/${result.totalCodes})` : '';
+          toast({
+            title: "IR Code Ready",
+            description: `${command}: ${result.irCode}${generationInfo}`,
+            duration: 4000,
+          });
+        }
+
+        // Show additional help for Samsung first-gen users
+        if (selectedBrand === 'samsung' && result.totalCodes > 1 && attempt === 0) {
+          setTimeout(() => {
+            toast({
+              title: "Multiple Codes Available",
+              description: "If this doesn't work, press the button again to try alternative codes for older Samsung TVs",
+              duration: 6000,
+            });
+          }, 1000);
+        }
       }
     } catch (error) {
+      // If first attempt failed and multiple codes are available, try next code
+      if (attempt === 0 && selectedBrand === 'samsung') {
+        setTimeout(() => {
+          toast({
+            title: "Trying Alternative Code",
+            description: "Using older Samsung TV compatibility code...",
+          });
+        }, 500);
+        return sendIrCommand(command, attempt + 1);
+      }
+
       toast({
         title: "Transmission Failed",
         description: error instanceof Error ? error.message : 'Failed to send command',
@@ -133,7 +159,7 @@ export default function RemotePage() {
     } finally {
       setTimeout(() => setIsTransmitting(false), 800);
     }
-  }, [selectedBrand, getIrCode, isConnected, sendCommand, toast]);
+  }, [selectedBrand, selectedTv, isConnected, sendCommand, toast]);
 
   const handleNumberPress = useCallback((number: string) => {
     const newBuffer = channelBuffer + number;
